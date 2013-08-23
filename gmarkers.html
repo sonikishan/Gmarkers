@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
+    </script>
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+      .bannercont.small {
+        background: none repeat scroll 0 0 #333333;
+        bottom: 10px;
+        opacity: 0.9;
+        padding: 10px 0;
+        position: relative;
+        width: 250px;
+        z-index: 1;
+      }
+      .bannercont h1 {
+        color: #FFFFFF;
+        font-family: 'HelveticaNeueLight';
+        font-size: 30px;
+        font-weight: normal;
+        line-height: 30px;
+        margin: 0 0 10px 10px;
+        text-shadow: 2px 2px 0 #3E3D40;
+      }
+      .bannercont p {
+        color: #FFFFFF;
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 14px;
+        font-weight: normal;
+        line-height: 18px;
+        margin: 0 0 10px 10px;
+        text-shadow: 2px 2px 0 #3E3D40;
+      }
+      .bannerbutton {
+        background: none repeat scroll 0 0 #FFEF44;
+        color: #3E3D40;
+        float: left;
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 18px;
+        margin: 0 0 10px 10px;
+        padding: 4px;
+      }
+      .bannerbutton a {
+        color: #3E3D40;
+        float: left;
+        line-height: 18px;
+        text-decoration: none;
+        width: 125px;
+      }
+    </style>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXN0V8gUv1Dta94c3CgHH-IUAED-um0xU&sensor=false">
+    </script>
+    <script type="text/javascript">
+
+      var map;
+      var infowindow;
+      var image = [];
+      var gmarkers = [];     
+
+      
+
+
+      var hotels = [
+        // ["The Pride Hotel", 23.0355685, 72.5193099, "Address of pride hotel"],
+        // ["The Gateway Hotel Ummed Ahmedabad", 23.0814886, 72.6163244, "Address of Gateway Hotel"],
+        // ["Le Meridien", 23.0269289, 72.5751078, "Address of Le Meridien"],
+        // ["Inder Residency", 23.0243207, 72.5648468, "Address of Inder Residency"],
+        // ["Fortune Landmark", 23.0480271, 72.5707614, "Address of Fortune Landmark"]
+        ["Hotel 1", 23.0355685, 72.5193099, "Address of pride hotel", "hotel"],
+        ["Hotel 2", 23.0814886, 72.6163244, "Address of Gateway Hotel", "hotel"],
+        ["Hotel 3", 23.0269289, 72.5751078, "Address of Le Meridien", "hotel"],
+        ["Hotel 4", 23.0243207, 72.5648468, "Address of Inder Residency", "hotel"],
+        ["Hotel 5", 23.0480271, 72.5707614, "Address of Fortune Landmark", "hotel"],
+
+        ["Cafe 1", 23.035578, 72.561543, "Address of hotel crown", "cafe"],
+        ["Cafe 2", 23.030000, 72.580000, "Address of CAMA HOTELS LTD", "cafe"],
+        ["Cafe 3", 23.030386, 72.584079, "Address of COMFORT INN SUNSET", "cafe"],
+
+        ["Somnath Temple", 20.794574, 70.70035, "Address of Somnath Temple", "temple"],
+        ["Girnar Temple", 21.505144, 70.54081, "Address of Girnar Temple", "temple"],
+        ["Dwarka Temple", 22.244197, 68.968456, "Address of Dwarka Temple", "temple"],
+        ["Ambaji Temple", 24.331002, 72.851653, "Address of Ambaji Temple", "temple"]
+      ];
+
+      function mapInit(){ 
+        var map;
+        var infowindow;
+        var image = [];
+        var gmarkers = []; 
+        var gmarkers_points = [];
+        // var len = $('.gmarkers-list ul li').length; alert(len);
+        $('.gmarkers-list ul li').each(function() {  
+          var marker_list = $(this).text();
+          // alert(marker_list);
+          var marker_list_array = marker_list.split(",")
+          $.each(marker_list_array,function(i){
+            gmarkers_points.push(marker_list_array); 
+          });
+        });
+
+
+        // alert(gmarkers_points.length);
+
+        // $.each(gmarkers_points, function(o){
+        //   alert(gmarkers_points[o]);
+        // });
+
+        var centerCoord = new google.maps.LatLng(23.039568, 72.56600399999999); 
+
+        var myStyles = [{
+          featureType: "poi",
+          elementType: "labels",
+          stylers: [
+              { visibility: "off" }
+            ]
+        }];
+        var mapOptions = {
+          zoom: 14,
+          center: centerCoord,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          disableDefaultUI: true,
+          styles : myStyles
+        };
+
+        map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
+        // google.maps.event.addListener(map, 'click', function() {
+        //   infowindow.close();
+        // });
+
+        
+        for(var i=0; i<gmarkers_points.length; i++) { 
+          createMarker(gmarkers_points[i][0],gmarkers_points[i][1],gmarkers_points[i][2],gmarkers_points[i][3],gmarkers_points[i][4]);
+        }
+        
+
+        function createMarker(tit, lat, log, addr, cat) { 
+          var newmarker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, log),
+            map: map,
+            title: tit
+          });
+
+          var contentString = '<div class="bannercont small">'+
+                '<h1>Restaurant<br>'+tit+'</h1>'+
+                '<p>'+addr+'<br>'+
+                '1234 AB  Hardenberg<br>'+
+                'Telelefoon: 0123 456 789</p>'+
+                '<div class="bannerbutton">'+
+                  '<a href="#">meer informatie</a>'+
+                  '</div>'
+                '</div>';    
+
+          newmarker.mycategory = cat;
+          gmarkers.push(newmarker);      
+
+              // newmarker['infowindow'] = new google.maps.InfoWindow({
+              //     content: contentString
+              // });
+          // if(cat=="temple") {
+          //   newmarker.setIcon("temple.png");
+          // } else {
+          //   newmarker.setIcon("Pointer.png");  
+          // }  
+
+          newmarker.setIcon("Pointer.png");
+          
+          if(cat!="hotel") {
+            newmarker.setVisible(false);
+          }
+
+
+          google.maps.event.addListener(newmarker, 'click', function() {
+            // if (infowindow) infowindow.close();
+              infowindow = new google.maps.InfoWindow({
+                content: contentString
+              });
+              infowindow.open(map, newmarker);
+          });
+
+          // google.maps.event.addListener(newmarker, 'mouseout', function() {
+          //     infowindow.close();
+          // });
+        }
+
+        function show(category) { 
+          for (var k=0; k<gmarkers.length; k++) {
+            if (gmarkers[k].mycategory == category) { 
+              gmarkers[k].setVisible(true);
+            }
+          }
+          document.getElementById(category+"box").checked = true;
+        }
+
+        function hide(category) { 
+          for (var j=0; j<gmarkers.length; j++) { 
+            if (gmarkers[j].mycategory == category) {
+              gmarkers[j].setVisible(false);
+            }
+          }
+          document.getElementById(category+"box").checked = false;
+          // infowindow.close();
+        }
+
+        function boxclick(box,category) {
+          if (box.checked) {
+            show(category);
+          } else {
+            hide(category);
+          }
+        }
+
+        $('#hotelbox').click(function () {
+          boxclick(this, 'hotel');
+        });
+
+        $('#cafebox').click(function () {
+          boxclick(this, 'cafe');
+        }); 
+        
+        $('#templebox').click(function () {
+          boxclick(this, 'temple');
+        });
+
+      }
+
+      jQuery(document).ready(function(){ 
+         mapInit();
+      });
+
+
+     //  function initGeolocation()
+     // {
+     //    if( navigator.geolocation )
+     //    {
+     //       // Call getCurrentPosition with success and failure callbacks
+     //       navigator.geolocation.getCurrentPosition( success, fail );
+     //    }
+     //    else
+     //    {
+     //       alert("Sorry, your browser does not support geolocation services.");
+     //    }
+     // }
+
+     // function success(position)
+     // {
+
+     //    var lon = position.coords.longitude;
+     //    var lat = position.coords.latitude
+     //    alert(lat + "=>" + lon);
+     //    var mylatlong = new google.maps.LatLng(lat, lon);
+
+     //    var myStyles = [{
+     //      featureType: "poi",
+     //      elementType: "labels",
+     //      stylers: [
+     //          { visibility: "off" }
+     //        ]
+     //      }];
+
+     //    var mapOptions = {
+     //      center: new google.maps.LatLng(lat, lon),
+     //      zoom: 14,
+     //      mapTypeId: google.maps.MapTypeId.ROADMAP,
+     //      disableDefaultUI: true,
+     //      styles: myStyles 
+     //    };
+
+     //    map = new google.maps.Map(document.getElementById("map-canvas"),
+     //      mapOptions);
+
+     //    processHotels(hotels);
+
+     //    // var marker = new google.maps.Marker({
+     //    //   position: mylatlong,
+     //    //   title:"Hello World!"
+     //    // });
+
+     //    //   // To add the marker to the map, call setMap();
+     //    // marker.setMap(map);
+     // }
+
+     // function addInfoWindow(marker, message) {
+     //        var info = message;
+
+     //        var infoWindow = new google.maps.InfoWindow({
+     //            content: message
+     //        });
+
+     //        google.maps.event.addListener(marker, 'click', function () {
+     //            infoWindow.open(map, marker);
+     //        });
+     //    }
+
+     // function fail()
+     // {
+     //    // Could not obtain location
+     // }
+
+     // function createMarker(tit, lat, log, addr, cat) { 
+     //    var newmarker = new google.maps.Marker({
+     //      position: new google.maps.LatLng(lat, log),
+     //      map: map,
+     //      title: tit
+     //    });
+
+     //    var contentString = '<div class="bannercont small">'+
+     //          '<h1>Restaurant<br>'+tit+'</h1>'+
+     //          '<p>'+addr+'<br>'+
+     //          '1234 AB  Hardenberg<br>'+
+     //          'Telelefoon: 0123 456 789</p>'+
+     //          '<div class="bannerbutton">'+
+     //            '<a href="#">meer informatie</a>'+
+     //            '</div>'
+     //          '</div>';    
+
+     //    newmarker.mycategory = cat;
+     //    gmarkers.push(newmarker);      
+
+     //    // newmarker['infowindow'] = new google.maps.InfoWindow({
+     //    //     content: contentString
+     //    // });
+
+     //    newmarker.setIcon("Pointer.png");
+
+     //    google.maps.event.addListener(newmarker, 'click', function() {
+     //      if (infowindow) infowindow.close();
+     //      infowindow = new google.maps.InfoWindow({
+     //        content: contentString
+     //      });
+     //      infowindow.open(map, newmarker);
+     //    });
+
+     //    // marker.push(newmarker);
+     // }
+
+     
+
+      // function initialize() {
+      //   initGeolocation();
+      // }
+
+      
+
+      
+
+      
+      
+      // google.maps.event.addDomListener(window, 'load', initialize);
+
+      
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas" style="width: 100%;height: 500px"></div>
+    <div class="filter-form">
+      <form action="#">
+        Hotels: <input type="checkbox" id="hotelbox" checked="checked" /> &nbsp;&nbsp;
+        Cafe: <input type="checkbox" id="cafebox"  /> &nbsp;&nbsp;
+        Temple: <input type="checkbox" id="templebox" /> 
+      </form>
+    </div>
+    <div class="gmarkers-list" style="display:none;">
+      <ul id="gmark-ul">
+        <li id="gmark-li">Hotel 1,23.0355685,72.5193099,Address of pride hotel,hotel</li>
+        <li id="gmark-li">Hotel 2,23.0814886,72.6163244,Address of Gateway Hotel,hotel</li>
+        <li id="gmark-li">Hotel 3,23.0269289,72.5751078,Address of Le Meridien,hotel</li>
+        <li id="gmark-li">Hotel 4,23.0243207,72.5648468,Address of Inder Residency,hotel</li>
+        <li id="gmark-li">Hotel 5,23.0480271,72.5707614,Address of Fortune Landmark,hotel</li>
+        <li id="gmark-li">Cafe 1,23.035578,72.561543,Address of hotel crown,cafe</li>
+        <li id="gmark-li">Cafe 2,23.030000,72.580000,Address of CAMA HOTELS LTD,cafe</li>
+        <li id="gmark-li">Cafe 3,23.030386,72.584079,Address of COMFORT INN SUNSET,cafe</li>
+
+        <li id="gmark-li">Somnath Temple,20.794574,70.70035,Address of Somnath Temple,temple</li>
+        <li id="gmark-li">Girnar Temple,21.505144,70.54081,Address of Girnar Temple,temple</li>
+        <li id="gmark-li">Dwarka Temple,22.244197,68.968456,Address of Dwarka Temple,temple</li>
+        <li id="gmark-li">Ambaji Temple,24.331002,72.851653,Address of Ambaji Temple,temple</li>
+      </ul>
+    </div>
+        <div id="sample">
+    <script type="text/javascript" src="http://js.nicedit.com/nicEdit-latest.js"></script> <script type="text/javascript">
+    //<![CDATA[
+    bkLib.onDomLoaded(function() { nicEditors.allTextAreas() });
+    //]]>
+    </script>
+    <h4>
+    First Textarea
+    </h4>
+    <textarea name="area1" cols="40">
+    </textarea><br />
+    <h4>
+    Second Textarea
+    </h4>
+    <textarea name="area2" style="width: 100%;">
+    Some Initial Content was in this textarea
+    </textarea><br />
+    <h4>
+    Third Textarea
+    </h4>
+    <textarea name="area3" style="width: 300px; height: 100px;">
+    HTML content default in textarea
+    </textarea>
+    </div>
+            
+  </body>
+</html>
